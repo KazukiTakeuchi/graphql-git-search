@@ -38,7 +38,10 @@ function App() {
             if (error) return `Error! ${error.message}`
 
             console.log({ data })
-            return <div></div>
+            const search = data.search
+            const repositoryCount = search.repositoryCount
+            const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
+            return <h2>GitHub {repositoryUnit} Search Results - {data.search.repositoryCount}</h2>
           }
         }
       </Query>
