@@ -5,6 +5,15 @@ import client from './client'
 import { SEARCH_REPOSITORIES } from './graphql'
 import { useState } from 'react';
 
+const StarButton = ({ node }) => {
+  const totalCount = node.stargazers.totalCount
+  return (
+    <button>
+      {totalCount === 1 ? "1 star" : `${totalCount} stars`}
+    </button>
+  )
+}
+
 const VARIABLES = {
   after: null,
   before: null,
@@ -13,7 +22,7 @@ const VARIABLES = {
   query: "フロントエンドエンジニア"
 }
 
-function App() {
+const App = () => {
   const [variables, setVariables] = useState(VARIABLES)
 
   const handleChange = event => {
@@ -57,7 +66,6 @@ function App() {
             if (loading) return 'Loading...'
             if (error) return `Error! ${error.message}`
 
-            console.log({ data })
             const search = data.search
             const repositoryCount = search.repositoryCount
             const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
@@ -72,6 +80,8 @@ function App() {
                       return (
                         <li key={node.id}>
                           <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
+                          &nbsp;
+                          <StarButton node={node} />
                         </li>
                       )
                     })
