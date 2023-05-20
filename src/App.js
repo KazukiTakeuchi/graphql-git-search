@@ -23,6 +23,26 @@ function App() {
     })
   }
 
+  const goNext = search => () => {
+    setVariables({
+      ...variables,
+      after: search.pageInfo.endCursor,
+      before: null,
+      first: 5,
+      last: null
+    });
+  }
+
+  const goPrevious = search => () => {
+    setVariables({
+      ...variables,
+      before: search.pageInfo.startCursor,
+      after: null,
+      first: null,
+      last: 5
+    });
+  }
+
   return (
     <ApolloProvider client={client}>
       <from>
@@ -41,7 +61,40 @@ function App() {
             const search = data.search
             const repositoryCount = search.repositoryCount
             const repositoryUnit = repositoryCount === 1 ? 'Repository' : 'Repositories'
-            return <h2>GitHub {repositoryUnit} Search Results - {data.search.repositoryCount}</h2>
+            const title = `GitHub Repositories Search Results - ${repositoryCount} ${repositoryUnit}`
+            return (
+              <>
+                <h2>{title}</h2>
+                <ul>
+                  {
+                    search.edges.map(edge => {
+                      const node = edge.node
+                      return (
+                        <li key={node.id}>
+                          <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
+                        </li>
+                      )
+                    })
+                  }
+                </ul>
+                {
+                  search.pageInfo.hasNextPage === true ?
+                    <button onClick={goNext(search)}>
+                      Next
+                    </button>
+                    :
+                    null
+                }
+                {
+                  search.pageInfo.hasPreviousPage === true ?
+                    <button onClick={goPrevious(search)}>
+                      Previous
+                    </button>
+                    :
+                    null
+                }
+              </>
+            );
           }
         }
       </Query>
