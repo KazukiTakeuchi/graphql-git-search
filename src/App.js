@@ -2,7 +2,7 @@ import './App.css';
 import { ApolloProvider, Query, Mutation } from 'react-apollo'
 import client from './client'
 import { SEARCH_REPOSITORIES, ADD_STAR, REMOVE_STAR } from './graphql'
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const StarButton = ({ node, variables }) => {
   const totalCount = node.stargazers.totalCount
@@ -50,16 +50,19 @@ const VARIABLES = {
   before: null,
   first: 5,
   last: null,
-  query: "フロントエンドエンジニア"
+  query: ""
 }
 
 const App = () => {
   const [variables, setVariables] = useState(VARIABLES)
+  const inputRef = useRef(null)
 
-  const handleChange = event => {
+  const handleSubmit = event => {
+    event.preventDefault()
+    const value = inputRef.current.value
     setVariables({
       ...variables,
-      query: event.target.value
+      query: value
     })
   }
 
@@ -83,11 +86,11 @@ const App = () => {
     });
   }
 
-
   return (
     <ApolloProvider client={client}>
-      <form>
-        <input value={variables.query} onChange={handleChange} />
+      <form onSubmit={handleSubmit}>
+        <input ref={inputRef} defaultValue={variables.query} />
+        <input type="submit" value="Submit" />
       </form>
       <Query
         query={SEARCH_REPOSITORIES}
