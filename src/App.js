@@ -4,7 +4,7 @@ import client from './client'
 import { SEARCH_REPOSITORIES, ADD_STAR, REMOVE_STAR } from './graphql'
 import { useState } from 'react';
 
-const StarButton = ({ node }) => {
+const StarButton = ({ node, variables }) => {
   const totalCount = node.stargazers.totalCount
   const viewerHasStarred = node.viewerHasStarred
   const starCount = totalCount === 1 ? "1 star" : `${totalCount} stars`
@@ -13,7 +13,21 @@ const StarButton = ({ node }) => {
       <button
         onClick={
           () => addOrRemoveStar({
-              variables: { input: { starrableId: node.id } }
+            variables: { input: { starrableId: node.id } },
+            update: store => {
+              const data = store.readQuery({
+                query: SEARCH_REPOSITORIES,
+                variables: variables
+              })
+              const edges = data.search.edges
+              edges.map(edge => {
+                if (edge.node.id === node.id) {
+                  const totalCount = edge.node.stargazers.totalCount
+                  const diff = viewerHasStarred ? -1 : 1
+                  edge.node.stargazers.totalCount = totalCount + diff
+                }
+              })
+            }
           })
         }
       >
@@ -72,9 +86,9 @@ const App = () => {
 
   return (
     <ApolloProvider client={client}>
-      <from>
+      <form>
         <input value={variables.query} onChange={handleChange} />
-      </from>
+      </form>
       <Query
         query={SEARCH_REPOSITORIES}
         variables={variables}
@@ -100,7 +114,7 @@ const App = () => {
                         <li key={node.id}>
                           <a href={node.url} target="_blank" rel="noopener noreferrer">{node.name}</a>
                           &nbsp;
-                          <StarButton node={node} />
+                          <StarButton node={node} variables={variables} />
                         </li>
                       )
                     })
